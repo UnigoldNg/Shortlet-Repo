@@ -1,0 +1,82 @@
+{
+  "theme_and_archetype": {
+    "domain": "Internal SaaS Tool / Real Estate Scoring",
+    "theme": "Light",
+    "archetype": "Archetype 4 (Swiss & High-Contrast)",
+    "reasoning": "A property scoring tool requires precision, authority, and functional clarity. The Swiss Brutalist aesthetic (monochrome base + stark primary accent colors) perfectly frames the strict tier classifications and data-heavy forms without distracting the advisor."
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "Manrope",
+    "guidelines": "Cabinet Grotesk for high-impact scores, tier badges, and major section headers. Manrope for the dense data tables, form inputs, and UI labels. Never use Inter. Avoid generic bolding; use font-black for impact or font-light for contrast.",
+    "sizing": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black text-slate-950",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight text-slate-950",
+      "h3": "text-xl sm:text-2xl font-semibold text-slate-950",
+      "h4": "text-lg sm:text-xl font-medium text-slate-900",
+      "body": "text-sm md:text-base text-slate-800 leading-relaxed",
+      "labels": "text-xs font-bold uppercase tracking-[0.2em] text-slate-500"
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "bg-slate-50",
+      "surface": "bg-white",
+      "inverted": "bg-slate-950"
+    },
+    "text": {
+      "primary": "text-slate-950",
+      "secondary": "text-slate-600",
+      "inverted": "text-white"
+    },
+    "borders": {
+      "soft": "border-slate-900/10",
+      "hard": "border-slate-950"
+    },
+    "brand_and_tiers": {
+      "primary_action": "bg-slate-950 text-white hover:bg-slate-800",
+      "tier1_instant": "bg-[#002FA7] text-white border-[#002FA7]",
+      "tier2_manual": "bg-[#FFD700] text-slate-950 border-[#FFD700]",
+      "tier3_reject": "bg-[#FF0000] text-white border-[#FF0000]",
+      "override_warning": "bg-slate-950 text-white border-l-4 border-[#FF0000]"
+    }
+  },
+  "layout_and_spacing": {
+    "strategy": "The 'Control Room' Grid",
+    "spacing_scale": "Generous spacing (p-8, p-12) for the scoring form to reduce cognitive load. Dense spacing (p-4, gap-4) for the results dashboard and data tables.",
+    "containers": "Sharp, unadorned. Use rounded-none. Expose the grid where possible with border-collapse and visible border-b or border-r lines.",
+    "multi_step_form": "Split layout: Left rail (col-span-1) for sticky navigation and live score summary. Right rail (col-span-3) for the actual category questions. Pure HTML/Tailwind for the structural layout.",
+    "dashboard_table": "Dense data table, sharp edges. Row hover state should just be a crisp background shift (bg-slate-100) and text color emphasis."
+  },
+  "components": {
+    "buttons": "Square edges (rounded-none). Primary CTA is solid black. Hover states should feature a rigid 2px solid shadow offset (Neo-brutalist touch: shadow-[2px_2px_0_0_#0A0A0A] -translate-y-[1px]).",
+    "inputs": "Shadcn based. Override to rounded-none, border-slate-950/20. Focus state must be crisp: focus:ring-1 focus:ring-slate-950 focus:border-slate-950.",
+    "segmented_control_scoring": "For the 1-5 scoring mechanism, do not use dropdowns. Use a horizontal radio group styled as connected square buttons (border-r-0 last:border-r). Selected state inverts to black background with white text.",
+    "cards": "Avoid soft floaty cards. Use flat rectangular containers with a 1px solid border (border-slate-950).",
+    "charts": "Shadcn/Recharts. Use a Radar Chart on the Final Result Page to visualize the 8 property categories. Stroke: black, Fill: black/10.",
+    "navigation": "Sticky top header (bg-white border-b border-slate-950 z-50). Must not be transparent. Include Logo, Dashboard link, 'New Evaluation' button.",
+    "badges": "Square, uppercase. TIER 1, TIER 2, TIER 3. Colors must match the brand_and_tiers palette exactly."
+  },
+  "motion": {
+    "hover": "Snappy, not floaty. Use transition-transform duration-150 ease-out.",
+    "page_transitions": "Fade and slight slide-up (translate-y-2) for form steps to maintain spatial awareness.",
+    "feedback": "Micro-interactions on clicking the 1-5 score buttons (slight scale down scale-95)."
+  },
+  "assets": {
+    "icons": "Use @phosphor-icons/react (Duotone or Regular weight). Keep them sharp and technical.",
+    "images": [
+      {
+        "category": "empty_state_background",
+        "url": "https://images.unsplash.com/photo-1774572601193-f458f1c73ef0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBicnV0YWxpc3QlMjBhcmNoaXRlY3R1cmUlMjBidWlsZGluZyUyMG1pbmltYWx8ZW58MHx8fHwxNzc3MTIzNTY3fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract brutalist architecture in grayscale. Use for the dashboard empty state (when no evaluations exist), applying a heavy white overlay (bg-white/80) to ensure text legibility over it."
+      }
+    ]
+  },
+  "specific_instructions_for_main_agent": [
+    "FORM SCORING LOGIC: Build a robust multi-step form for the 8 categories. Sub-factors inside each category are scored 1-5. Display the calculated weighted percentage live on the side/bottom.",
+    "OVERRIDE RULE (CRITICAL): If Availability Reliability OR Owner Alignment average score falls below a threshold (e.g., < 3 or whatever you deem 'weak'), block Tier 1 classification regardless of the overall score. Display a high-contrast override warning banner on the final results page.",
+    "RESULT PAGE: The results page should feel like an authoritative report card. Large typographic score (e.g., '88%') paired with the Tier Badge and the 8-axis Radar Chart.",
+    "DASHBOARD: Implement a data table with standard columns: Property Name, Location, Date, Score, Tier. Add filters by Tier above the table. Include 'Export PDF' in the row actions.",
+    "TESTING: Every single form input, navigation link, 1-5 score button, and submit action MUST include a functional 'data-testid' attribute (e.g., data-testid='score-location-5')."
+  ]
+}
