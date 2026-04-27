@@ -15,10 +15,18 @@ from datetime import datetime, timezone
 
 load_dotenv()
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+_db = None
+
+def get_db():
+    global _db
+    if _db is None:
+        mongo_url = os.environ.get('MONGO_URL')
+        db_name = os.environ.get('DB_NAME', 'shortlet')
+        if not mongo_url:
+            raise RuntimeError("MONGO_URL environment variable is not set")
+        client = AsyncIOMotorClient(mongo_url)
+        _db = client[db_name]
+    return _db
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -260,7 +268,7 @@ async def create_evaluation(payload: EvaluationCreate):
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
     }
-    await db.evaluations.insert_one({**evaluation})
+    await get_db().evaluations.insert_one({**evaluation})
     return Evaluation(**_serialize(dict(evaluation)))
 
 
@@ -274,13 +282,13 @@ async def list_evaluations(tier: Optional[int] = None, q: Optional[str] = None):
             {"name": {"$regex": q, "$options": "i"}},
             {"location": {"$regex": q, "$options": "i"}},
         ]
-    docs = await db.evaluations.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    docs = await get_db().evaluations.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return [Evaluation(**_serialize(d)) for d in docs]
 
 
 @api_router.get("/evaluations/{eval_id}", response_model=Evaluation)
 async def get_evaluation(eval_id: str):
-    doc = await db.evaluations.find_one({"id": eval_id}, {"_id": 0})
+    doc = await get_db().evaluations.find_one({"id": eval_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Evaluation not found")
     return Evaluation(**_serialize(doc))
@@ -288,7 +296,7 @@ async def get_evaluation(eval_id: str):
 
 @api_router.put("/evaluations/{eval_id}", response_model=Evaluation)
 async def update_evaluation(eval_id: str, payload: EvaluationUpdate):
-    existing = await db.evaluations.find_one({"id": eval_id}, {"_id": 0})
+    existing = await get_db().evaluations.find_one({"id": eval_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Evaluation not found")
     update_data = {k: v for k, v in payload.model_dump().items() if v is not None}
@@ -296,14 +304,14 @@ async def update_evaluation(eval_id: str, payload: EvaluationUpdate):
         computed = compute_score(update_data["scores"])
         update_data.update(computed)
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.evaluations.update_one({"id": eval_id}, {"$set": update_data})
-    doc = await db.evaluations.find_one({"id": eval_id}, {"_id": 0})
+    await get_db().evaluations.update_one({"id": eval_id}, {"$set": update_data})
+    doc = await get_db().evaluations.find_one({"id": eval_id}, {"_id": 0})
     return Evaluation(**_serialize(doc))
 
 
 @api_router.delete("/evaluations/{eval_id}")
 async def delete_evaluation(eval_id: str):
-    res = await db.evaluations.delete_one({"id": eval_id})
+    res = await get_db().evaluations.delete_one({"id": eval_id})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Evaluation not found")
     return {"ok": True}
@@ -311,6 +319,7 @@ async def delete_evaluation(eval_id: str):
 
 @api_router.get("/stats")
 async def stats():
+    db = get_db()
     total = await db.evaluations.count_documents({})
     t1 = await db.evaluations.count_documents({"tier": 1})
     t2 = await db.evaluations.count_documents({"tier": 2})
